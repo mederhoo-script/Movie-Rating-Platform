@@ -13,6 +13,7 @@ A full-stack web application for rating and reviewing movies. Users can browse m
 - Swagger/OpenAPI documentation
 - SQLite database (with PostgreSQL support)
 - Complete test suite
+- **IMDB API integration** for external movie search
 
 ### Frontend (React SPA)
 - User registration and login
@@ -23,6 +24,9 @@ A full-stack web application for rating and reviewing movies. Users can browse m
 - Responsive design
 - Secure JWT token management
 - Component testing
+- **Dark/Light/System theme switcher** with localStorage persistence
+- **Combined search**: Searches local database first, falls back to IMDB API if no results
+- Accessible focus states and high contrast design
 
 ## 📁 Project Structure
 
@@ -71,17 +75,22 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Run migrations:
+4. (Optional) Set up environment variables for IMDB search:
+```bash
+export OMDB_API_KEY="your_omdb_api_key_here"  # Get free key from http://www.omdbapi.com/
+```
+
+5. Run migrations:
 ```bash
 python manage.py migrate
 ```
 
-5. (Optional) Create a superuser for admin access:
+6. (Optional) Create a superuser for admin access:
 ```bash
 python manage.py createsuperuser
 ```
 
-6. Start the development server:
+7. Start the development server:
 ```bash
 python manage.py runserver
 ```
@@ -575,6 +584,80 @@ This provides a better user experience than requiring separate endpoints.
    - Update REACT_APP_API_URL to production API
    - Remove console.log statements
    - Enable production optimizations
+
+## 🎨 New Features Guide
+
+### Theme Switcher
+
+The application now includes a comprehensive theme system with Dark, Light, and System modes.
+
+**Features:**
+- **Dark Mode** is set as the default theme
+- Theme selector accessible from the navigation bar (top-right)
+- Three theme options:
+  - 🌙 **Dark**: Dark theme with high contrast
+  - ☀️ **Light**: Traditional light theme
+  - 💻 **System**: Automatically syncs with your operating system's theme preference
+- Theme preference is persisted in localStorage and survives page refreshes
+- Smooth transitions between themes
+- All components and pages are theme-aware
+- Accessible focus states with high contrast
+
+**How to Use:**
+1. Click the theme toggle button in the navigation bar
+2. Select your preferred theme from the dropdown
+3. Your choice is automatically saved
+
+**For Developers:**
+- Theme is managed via React Context (`ThemeContext`)
+- CSS variables are used for all colors, enabling easy theme switching
+- Add new themed components by using CSS variables:
+  ```css
+  .my-component {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+  }
+  ```
+
+### Combined Search (DB + IMDB)
+
+The movie search now intelligently searches both your local database and IMDB.
+
+**How It Works:**
+1. **Primary Search**: When you search for a movie, the system first queries your local database
+2. **Fallback to IMDB**: If no local results are found, it automatically searches IMDB's database
+3. **Visual Indicators**: IMDB results are clearly marked with a gold "IMDB" badge
+4. **Distinctive Styling**: IMDB movies have a gold border to distinguish them from local movies
+
+**Features:**
+- Seamless search experience across two data sources
+- Results include movie poster, title, year, genre, director, and description
+- IMDB movies show their IMDB rating
+- No need to manually switch between databases
+
+**Setting Up IMDB Search:**
+
+To enable IMDB search, you need an OMDb API key:
+
+1. Visit [http://www.omdbapi.com/apikey.aspx](http://www.omdbapi.com/apikey.aspx)
+2. Sign up for a free API key (free tier allows 1,000 requests per day)
+3. Set the environment variable:
+   ```bash
+   # Linux/Mac
+   export OMDB_API_KEY="your_api_key_here"
+   
+   # Windows
+   set OMDB_API_KEY=your_api_key_here
+   ```
+4. Restart your Django server
+
+**Note:** Without an API key, the search will still work but will only search your local database.
+
+**API Endpoint:**
+```bash
+GET /api/movies/search-imdb/?query=inception
+```
 
 ## 🤝 Contributing
 
