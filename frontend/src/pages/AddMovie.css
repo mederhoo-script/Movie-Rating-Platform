@@ -5,16 +5,16 @@
 }
 
 .add-movie-card {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--shadow);
   padding: 30px;
 }
 
 .add-movie-card h2 {
   margin-top: 0;
   margin-bottom: 30px;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .add-movie-card .form-group {
@@ -24,7 +24,7 @@
 .add-movie-card label {
   display: block;
   margin-bottom: 5px;
-  color: #555;
+  color: var(--text-tertiary);
   font-weight: 500;
 }
 
@@ -32,17 +32,20 @@
 .add-movie-card textarea {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 14px;
   box-sizing: border-box;
   font-family: inherit;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .add-movie-card input:focus,
 .add-movie-card textarea:focus {
-  outline: none;
-  border-color: #007bff;
+  outline: 2px solid var(--primary-color);
+  outline-offset: 0;
+  border-color: var(--primary-color);
 }
 
 .form-actions {

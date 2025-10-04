@@ -41,6 +41,7 @@ const MovieList = () => {
 
   useEffect(() => {
     fetchMovies(searchTerm, page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   const handleSearch = (e) => {
