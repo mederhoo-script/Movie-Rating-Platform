@@ -6,6 +6,7 @@ from .views import (
     MovieDetailView,
     MovieRatingListCreateView,
     UserRatingsView,
+    IMDBSearchView,
 )
 
 urlpatterns = [
@@ -16,6 +17,7 @@ urlpatterns = [
     # Movie endpoints
     path('movies/', MovieListCreateView.as_view(), name='movie-list'),
     path('movies/<int:pk>/', MovieDetailView.as_view(), name='movie-detail'),
+    path('movies/search-imdb/', IMDBSearchView.as_view(), name='imdb-search'),
     
     # Rating endpoints
     path('movies/<int:movie_id>/ratings/', MovieRatingListCreateView.as_view(), name='movie-ratings'),

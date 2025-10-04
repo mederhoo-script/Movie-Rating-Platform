@@ -38,6 +38,28 @@
   border-color: var(--primary-color);
 }
 
+.search-info {
+  background-color: #e7f3ff;
+  border-left: 4px solid #2196f3;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+
+[data-theme="dark"] .search-info {
+  background-color: #1e3a5f;
+  border-left-color: #3b82f6;
+}
+
+.search-info p {
+  margin: 0;
+  color: #1976d2;
+}
+
+[data-theme="dark"] .search-info p {
+  color: #90caf9;
+}
+
 .loading {
   text-align: center;
   padding: 40px;
@@ -57,6 +79,30 @@
   box-shadow: 0 2px 8px var(--shadow);
   padding: 20px;
   transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.movie-card.imdb-movie {
+  border: 2px solid #f5c518;
+}
+
+[data-theme="dark"] .movie-card.imdb-movie {
+  border-color: #f5c518;
+}
+
+.movie-source-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.badge-imdb {
+  background-color: #f5c518;
+  color: #000;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .movie-card:hover {

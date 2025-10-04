@@ -10,10 +10,12 @@ const MovieList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchSource, setSearchSource] = useState(null); // 'db', 'imdb', or null
 
   const fetchMovies = async (searchQuery = '', pageNum = 1) => {
     try {
       setLoading(true);
+      setSearchSource(null);
       const params = {
         page: pageNum,
       };
@@ -23,12 +25,34 @@ const MovieList = () => {
       }
 
       const response = await movieService.getMovies(params);
-      setMovies(response.data.results);
       
-      // Calculate total pages
-      const total = response.data.count;
-      const perPage = 10; // Default page size from backend
-      setTotalPages(Math.ceil(total / perPage));
+      // If we have a search query but no results, try IMDB
+      if (searchQuery && response.data.results.length === 0) {
+        try {
+          const imdbResponse = await movieService.searchIMDB(searchQuery);
+          if (imdbResponse.data && imdbResponse.data.results && imdbResponse.data.results.length > 0) {
+            setMovies(imdbResponse.data.results);
+            setSearchSource('imdb');
+            setTotalPages(1); // IMDB results are not paginated in this implementation
+          } else {
+            setMovies([]);
+            setSearchSource('db');
+          }
+        } catch (imdbErr) {
+          // If IMDB search fails, just show empty results from our DB
+          console.error('IMDB search failed:', imdbErr);
+          setMovies([]);
+          setSearchSource('db');
+        }
+      } else {
+        setMovies(response.data.results);
+        setSearchSource('db');
+        
+        // Calculate total pages
+        const total = response.data.count;
+        const perPage = 10; // Default page size from backend
+        setTotalPages(Math.ceil(total / perPage));
+      }
       
       setError('');
     } catch (err) {
@@ -55,6 +79,56 @@ const MovieList = () => {
     window.scrollTo(0, 0);
   };
 
+  const renderMovieCard = (movie) => {
+    const isIMDBMovie = searchSource === 'imdb';
+    
+    return (
+      <div key={movie.id || movie.imdbID} className={`movie-card ${isIMDBMovie ? 'imdb-movie' : ''}`}>
+        {isIMDBMovie && (
+          <div className="movie-source-badge">
+            <span className="badge-imdb">IMDB</span>
+          </div>
+        )}
+        <h3>{movie.title || movie.Title}</h3>
+        <p className="movie-year">{movie.release_year || movie.Year}</p>
+        <p className="movie-genre">{movie.genre || movie.Genre}</p>
+        {movie.director && <p className="movie-director">Director: {movie.director}</p>}
+        {movie.Director && <p className="movie-director">Director: {movie.Director}</p>}
+        <p className="movie-description">
+          {movie.description ? (
+            movie.description.length > 150
+              ? `${movie.description.substring(0, 150)}...`
+              : movie.description
+          ) : movie.Plot ? (
+            movie.Plot.length > 150
+              ? `${movie.Plot.substring(0, 150)}...`
+              : movie.Plot
+          ) : 'No description available'}
+        </p>
+        {!isIMDBMovie && (
+          <>
+            <div className="movie-rating">
+              <span className="rating-score">
+                ⭐ {movie.average_rating ? movie.average_rating.toFixed(1) : 'N/A'}
+              </span>
+              <span className="rating-count">
+                ({movie.ratings_count} {movie.ratings_count === 1 ? 'rating' : 'ratings'})
+              </span>
+            </div>
+            <Link to={`/movies/${movie.id}`} className="btn btn-link">View Details</Link>
+          </>
+        )}
+        {isIMDBMovie && movie.imdbRating && (
+          <div className="movie-rating">
+            <span className="rating-score">
+              ⭐ {movie.imdbRating} (IMDB)
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="movie-list-container">
       <div className="movie-list-header">
@@ -73,32 +147,17 @@ const MovieList = () => {
         <button type="submit" className="btn btn-secondary">Search</button>
       </form>
 
+      {searchSource === 'imdb' && (
+        <div className="search-info">
+          <p>✨ Showing results from IMDB. No matches found in our database.</p>
+        </div>
+      )}
+
       {loading && <div className="loading">Loading movies...</div>}
       {error && <div className="error-message">{error}</div>}
 
       <div className="movie-grid">
-        {movies.map((movie) => (
-          <div key={movie.id} className="movie-card">
-            <h3>{movie.title}</h3>
-            <p className="movie-year">{movie.release_year}</p>
-            <p className="movie-genre">{movie.genre}</p>
-            <p className="movie-director">Director: {movie.director}</p>
-            <p className="movie-description">
-              {movie.description.length > 150
-                ? `${movie.description.substring(0, 150)}...`
-                : movie.description}
-            </p>
-            <div className="movie-rating">
-              <span className="rating-score">
-                ⭐ {movie.average_rating ? movie.average_rating.toFixed(1) : 'N/A'}
-              </span>
-              <span className="rating-count">
-                ({movie.ratings_count} {movie.ratings_count === 1 ? 'rating' : 'ratings'})
-              </span>
-            </div>
-            <Link to={`/movies/${movie.id}`} className="btn btn-link">View Details</Link>
-          </div>
-        ))}
+        {movies.map((movie) => renderMovieCard(movie))}
       </div>
 
       {!loading && movies.length === 0 && (
@@ -108,7 +167,7 @@ const MovieList = () => {
         </div>
       )}
 
-      {totalPages > 1 && (
+      {totalPages > 1 && searchSource === 'db' && (
         <div className="pagination">
           <button
             onClick={() => handlePageChange(page - 1)}

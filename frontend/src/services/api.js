@@ -36,6 +36,7 @@ export const movieService = {
   createMovie: (movieData) => api.post('/movies/', movieData),
   updateMovie: (id, movieData) => api.put(`/movies/${id}/`, movieData),
   deleteMovie: (id) => api.delete(`/movies/${id}/`),
+  searchIMDB: (query) => api.get('/movies/search-imdb/', { params: { query } }),
 };
 
 // Rating endpoints
