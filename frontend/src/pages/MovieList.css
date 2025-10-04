@@ -189,3 +189,29 @@
 .page-info {
   color: var(--text-secondary);
 }
+
+.results-section {
+  margin-bottom: 50px;
+  padding: 20px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+}
+
+.results-section.imdb-section {
+  border: 2px solid #f5c518;
+  background: linear-gradient(to bottom, var(--bg-primary), var(--bg-secondary));
+}
+
+.section-title {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+  font-size: 24px;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.imdb-section .section-title {
+  color: #f5c518;
+  border-bottom-color: #f5c518;
+}
