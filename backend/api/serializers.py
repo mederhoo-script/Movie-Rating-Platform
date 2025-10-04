@@ -51,7 +51,7 @@ class MovieSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = ('id', 'title', 'description', 'release_year', 'genre', 'director', 
+        fields = ('id', 'title', 'description', 'release_year', 'genre', 'director',
                   'created_by', 'average_rating', 'ratings_count', 'created_at', 'updated_at')
         read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
 
@@ -64,6 +64,6 @@ class MovieDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = ('id', 'title', 'description', 'release_year', 'genre', 'director', 
+        fields = ('id', 'title', 'description', 'release_year', 'genre', 'director',
                   'created_by', 'average_rating', 'ratings_count', 'ratings', 'created_at', 'updated_at')
         read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')

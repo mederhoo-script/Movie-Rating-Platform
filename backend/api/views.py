@@ -5,13 +5,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
-import requests
-import os
 from .models import Movie, Rating
 from .serializers import (
-    UserRegistrationSerializer, 
+    UserRegistrationSerializer,
     UserSerializer,
-    MovieSerializer, 
+    MovieSerializer,
     MovieDetailSerializer,
     RatingSerializer
 )
@@ -30,7 +28,7 @@ class UserRegistrationView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         refresh = RefreshToken.for_user(user)
-        
+
         return Response({
             'user': UserSerializer(user).data,
             'tokens': {
@@ -49,23 +47,23 @@ class UserLoginView(APIView):
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
-        
+
         if not username or not password:
             return Response(
                 {'error': 'Please provide both username and password'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         user = authenticate(username=username, password=password)
-        
+
         if not user:
             return Response(
                 {'error': 'Invalid credentials'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
-        
+
         refresh = RefreshToken.for_user(user)
-        
+
         return Response({
             'user': UserSerializer(user).data,
             'tokens': {
@@ -134,7 +132,7 @@ class MovieRatingListCreateView(APIView):
 
     def post(self, request, movie_id):
         movie = get_object_or_404(Movie, pk=movie_id)
-        
+
         # Check if user already rated this movie
         rating, created = Rating.objects.get_or_create(
             movie=movie,
@@ -144,7 +142,7 @@ class MovieRatingListCreateView(APIView):
                 'comment': request.data.get('comment', '')
             }
         )
-        
+
         if not created:
             # Update existing rating
             serializer = RatingSerializer(rating, data=request.data, partial=True)
@@ -167,70 +165,4 @@ class UserRatingsView(generics.ListAPIView):
     def get_queryset(self):
         user_id = self.kwargs['user_id']
         return Rating.objects.filter(user_id=user_id)
-
-
-class IMDBSearchView(APIView):
-    """
-    Search movies from IMDB (OMDb API)
-    """
-    permission_classes = [permissions.AllowAny]
-    
-    def get(self, request):
-        query = request.query_params.get('query', '')
-        
-        if not query:
-            return Response(
-                {'error': 'Query parameter is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Use OMDb API for IMDB data
-        # For production, store this in environment variable
-        omdb_api_key = os.environ.get('OMDB_API_KEY', 'YOUR_OMDB_API_KEY')
-        
-        try:
-            # Search for movies
-            response = requests.get(
-                'http://www.omdbapi.com/',
-                params={
-                    'apikey': omdb_api_key,
-                    's': query,
-                    'type': 'movie'
-                },
-                timeout=10
-            )
-            
-            data = response.json()
-            
-            if data.get('Response') == 'True' and data.get('Search'):
-                # Get detailed information for each movie
-                detailed_results = []
-                for movie in data['Search'][:5]:  # Limit to 5 results
-                    detail_response = requests.get(
-                        'http://www.omdbapi.com/',
-                        params={
-                            'apikey': omdb_api_key,
-                            'i': movie['imdbID'],
-                            'plot': 'short'
-                        },
-                        timeout=10
-                    )
-                    if detail_response.status_code == 200:
-                        detailed_results.append(detail_response.json())
-                
-                return Response({
-                    'results': detailed_results,
-                    'count': len(detailed_results)
-                })
-            else:
-                return Response({
-                    'results': [],
-                    'count': 0
-                })
-                
-        except requests.exceptions.RequestException as e:
-            return Response(
-                {'error': f'Failed to search IMDB: {str(e)}'},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE
-            )
 
