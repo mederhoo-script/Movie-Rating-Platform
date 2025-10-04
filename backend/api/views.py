@@ -5,6 +5,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
+import requests
+import os
 from .models import Movie, Rating
 from .serializers import (
     UserRegistrationSerializer, 
@@ -165,4 +167,70 @@ class UserRatingsView(generics.ListAPIView):
     def get_queryset(self):
         user_id = self.kwargs['user_id']
         return Rating.objects.filter(user_id=user_id)
+
+
+class IMDBSearchView(APIView):
+    """
+    Search movies from IMDB (OMDb API)
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    def get(self, request):
+        query = request.query_params.get('query', '')
+        
+        if not query:
+            return Response(
+                {'error': 'Query parameter is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Use OMDb API for IMDB data
+        # For production, store this in environment variable
+        omdb_api_key = os.environ.get('OMDB_API_KEY', 'YOUR_OMDB_API_KEY')
+        
+        try:
+            # Search for movies
+            response = requests.get(
+                'http://www.omdbapi.com/',
+                params={
+                    'apikey': omdb_api_key,
+                    's': query,
+                    'type': 'movie'
+                },
+                timeout=10
+            )
+            
+            data = response.json()
+            
+            if data.get('Response') == 'True' and data.get('Search'):
+                # Get detailed information for each movie
+                detailed_results = []
+                for movie in data['Search'][:5]:  # Limit to 5 results
+                    detail_response = requests.get(
+                        'http://www.omdbapi.com/',
+                        params={
+                            'apikey': omdb_api_key,
+                            'i': movie['imdbID'],
+                            'plot': 'short'
+                        },
+                        timeout=10
+                    )
+                    if detail_response.status_code == 200:
+                        detailed_results.append(detail_response.json())
+                
+                return Response({
+                    'results': detailed_results,
+                    'count': len(detailed_results)
+                })
+            else:
+                return Response({
+                    'results': [],
+                    'count': 0
+                })
+                
+        except requests.exceptions.RequestException as e:
+            return Response(
+                {'error': f'Failed to search IMDB: {str(e)}'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
 

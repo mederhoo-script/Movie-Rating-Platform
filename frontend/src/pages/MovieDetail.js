@@ -21,6 +21,7 @@ const MovieDetail = () => {
 
   useEffect(() => {
     fetchMovieDetail();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchMovieDetail = async () => {

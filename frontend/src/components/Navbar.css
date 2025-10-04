@@ -1,8 +1,8 @@
 .navbar {
-  background: #007bff;
+  background: var(--navbar-bg);
   color: white;
   padding: 15px 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--shadow);
 }
 
 .navbar-container {
@@ -25,6 +25,12 @@
   opacity: 0.9;
 }
 
+.navbar-logo:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .navbar-menu {
   display: flex;
   align-items: center;
@@ -41,6 +47,11 @@
 
 .navbar-link:hover {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-link:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
 }
 
 .navbar-user {
