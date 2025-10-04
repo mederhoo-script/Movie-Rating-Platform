@@ -46,4 +46,19 @@ export const ratingService = {
   getUserRatings: (userId) => api.get(`/users/${userId}/ratings/`),
 };
 
+// IMDB API helper (direct fetch to public API)
+export const imdbService = {
+  searchMovies: async (query) => {
+    try {
+      const response = await axios.get('https://imdb.iamidiotareyoutoo.com/search', {
+        params: { q: query }
+      });
+      return response;
+    } catch (error) {
+      console.error('IMDB API error:', error);
+      throw error;
+    }
+  }
+};
+
 export default api;
